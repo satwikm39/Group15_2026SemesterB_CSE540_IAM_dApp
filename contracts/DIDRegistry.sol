@@ -120,15 +120,23 @@ contract DIDRegistry {
         PublicKey memory initialPublicKey,
         ServiceEndpoint memory initialService
     ) external {
-        // TODO: Implement registration logic
-        // - Validate that `did` is not empty and not already registered
-        // - Create a new DIDDocument in storage with msg.sender as controller
-        // - Push the initialPublicKey into the document's publicKeys array
-        // - If initialService.serviceId is non-empty, push it into serviceEndpoints
-        // - Set created and updated timestamps to block.timestamp
-        // - Mark active = true
-        // - Add the DID to controllerToDIDs[msg.sender]
-        // - Emit DIDRegistered event
+        require(bytes(did).length > 0, "DIDRegistry: empty DID");
+        require(!registeredDIDs[did], "DIDRegistry: DID already registered");
+
+        DIDDocument storage doc = didDocuments[did];
+        doc.controller = msg.sender;
+        doc.created = block.timestamp;
+        doc.updated = block.timestamp;
+        doc.active = true;
+        doc.publicKeys.push(initialPublicKey);
+        if (bytes(initialService.serviceId).length > 0) {
+            doc.serviceEndpoints.push(initialService);
+        }
+
+        registeredDIDs[did] = true;
+        controllerToDIDs[msg.sender].push(did);
+
+        emit DIDRegistered(did, msg.sender, block.timestamp);
     }
 
     /**

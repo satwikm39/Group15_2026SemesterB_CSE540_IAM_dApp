@@ -125,15 +125,35 @@ contract CredentialStatus {
         bytes32 credentialHash,
         string memory ipfsCID
     ) external returns (bytes32 credentialId) {
-        // TODO: Implement issuance logic
-        // - Generate credentialId = keccak256(abi.encodePacked(msg.sender, subjectDID, credentialHash, block.timestamp))
-        // - Ensure credentialId is not already registered
-        // - Allocate the next status index for msg.sender from nextStatusIndex[msg.sender]
-        // - Increment nextStatusIndex[msg.sender]
-        // - Store the CredentialAnchor in credentialAnchors[credentialId]
-        // - Mark registeredCredentials[credentialId] = true
-        // - Emit CredentialIssued event
-        // - Return credentialId
+        credentialId = keccak256(
+            abi.encodePacked(msg.sender, subjectDID, credentialHash, block.timestamp)
+        );
+        require(!registeredCredentials[credentialId], "CredentialStatus: duplicate credentialId");
+
+        uint256 statusIndex = nextStatusIndex[msg.sender];
+        unchecked {
+            nextStatusIndex[msg.sender] = statusIndex + 1;
+        }
+
+        credentialAnchors[credentialId] = CredentialAnchor({
+            issuer: msg.sender,
+            subjectDID: subjectDID,
+            credentialHash: credentialHash,
+            ipfsCID: ipfsCID,
+            issuedAt: block.timestamp,
+            statusIndex: statusIndex
+        });
+        registeredCredentials[credentialId] = true;
+
+        emit CredentialIssued(
+            credentialId,
+            msg.sender,
+            subjectDID,
+            credentialHash,
+            ipfsCID,
+            statusIndex,
+            block.timestamp
+        );
     }
 
     /**
@@ -158,8 +178,8 @@ contract CredentialStatus {
      * @param result        The result of the off-chain cryptographic verification.
      */
     function logVerification(bytes32 credentialId, bool result) external {
-        // TODO: Implement verification logging
-        // - Emit VerificationLogged(credentialId, msg.sender, result, block.timestamp)
+        require(registeredCredentials[credentialId], "CredentialStatus: Credential not found");
+        emit VerificationLogged(credentialId, msg.sender, result, block.timestamp);
     }
 
     // -------------------------------------------------------------------------
@@ -174,11 +194,13 @@ contract CredentialStatus {
      */
     function isRevoked(bytes32 credentialId) external view returns (bool) {
         require(registeredCredentials[credentialId], "CredentialStatus: Credential not found");
-        // TODO: Implement revocation check
-        // - Get statusIndex from credentialAnchors[credentialId].statusIndex
-        // - Get issuer from credentialAnchors[credentialId].issuer
-        // - Compute bitmapChunk and bitPosition
-        // - Return (revocationBitmaps[issuer][bitmapChunk] >> bitPosition) & 1 == 1
+        CredentialAnchor storage anchor = credentialAnchors[credentialId];
+        uint256 statusIndex = anchor.statusIndex;
+        address issuer = anchor.issuer;
+        uint256 bitmapChunk = statusIndex / 256;
+        uint256 bitPosition = statusIndex % 256;
+        uint256 chunk = revocationBitmaps[issuer][bitmapChunk];
+        return ((chunk >> bitPosition) & 1) == 1;
     }
 
     /**

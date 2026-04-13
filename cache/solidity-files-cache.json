@@ -1,0 +1,116 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/revatsaharan/Documents/Git_Repos/Group15_2026SemesterB_CSE540_IAM_dApp/contracts/AccessControl.sol": {
+      "lastModificationDate": 1775990532206,
+      "contentHash": "6d8fe0b3a6f4fd7778513ab36dd4cf49",
+      "sourceName": "contracts/AccessControl.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./DIDRegistry.sol",
+        "./CredentialStatus.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "AccessControl"
+      ]
+    },
+    "/Users/revatsaharan/Documents/Git_Repos/Group15_2026SemesterB_CSE540_IAM_dApp/contracts/DIDRegistry.sol": {
+      "lastModificationDate": 1775991686852,
+      "contentHash": "cf18bfb85e24b9b495ba12a98a901121",
+      "sourceName": "contracts/DIDRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "DIDRegistry"
+      ]
+    },
+    "/Users/revatsaharan/Documents/Git_Repos/Group15_2026SemesterB_CSE540_IAM_dApp/contracts/CredentialStatus.sol": {
+      "lastModificationDate": 1775991696589,
+      "contentHash": "6a0186d375fee3172476b753d764268b",
+      "sourceName": "contracts/CredentialStatus.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "CredentialStatus"
+      ]
+    }
+  }
+}

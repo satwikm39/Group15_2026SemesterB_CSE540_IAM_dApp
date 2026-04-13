@@ -242,6 +242,7 @@ contract AccessControl {
         // - Compute consentKey
         // - Retrieve the ConsentGrant
         // - Return grant.granted && (grant.expiresAt == 0 || block.timestamp <= grant.expiresAt)
+        revert("AccessControl: hasConsent not implemented");
     }
 
     /**

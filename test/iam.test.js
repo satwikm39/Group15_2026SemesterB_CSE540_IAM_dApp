@@ -134,4 +134,53 @@ describe("IAM dApp - Smart Contract Test Suite", function () {
       // TODO: Call revokeConsent() — expect hasConsent() to return false
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Demo: register DID → issue credential → verify integrity → log on-chain
+  // ---------------------------------------------------------------------------
+  describe("Demo E2E (identity → credential → verification)", function () {
+    it("registers DID, issues credential, checks not revoked, verifies hash, logs VerificationLogged", async function () {
+      const holderPk = {
+        keyId: "key-1",
+        keyType: "EcdsaSecp256k1VerificationKey2019",
+        controller: holder.address,
+        publicKeyHex: "0x",
+      };
+      const emptyService = { serviceId: "", serviceType: "", endpoint: "" };
+
+      await expect(
+        didRegistry.connect(holder).registerDID(HOLDER_DID, holderPk, emptyService)
+      ).to.emit(didRegistry, "DIDRegistered");
+
+      const doc = await didRegistry.resolveDID(HOLDER_DID);
+      expect(doc.controller).to.equal(holder.address);
+      expect(doc.active).to.be.true;
+
+      const vcPayload = "demo-verifiable-credential-payload";
+      const credentialHash = ethers.keccak256(ethers.toUtf8Bytes(vcPayload));
+      const ipfsCID = "QmDemoPlaceholder";
+
+      const issueTx = await credentialStatus
+        .connect(issuer)
+        .issueCredential(HOLDER_DID, credentialHash, ipfsCID);
+      const issueReceipt = await issueTx.wait();
+      const issued = issueReceipt.logs
+        .map((log) => {
+          try {
+            return credentialStatus.interface.parseLog(log);
+          } catch {
+            return null;
+          }
+        })
+        .find((p) => p && p.name === "CredentialIssued");
+      expect(issued).to.not.equal(undefined);
+      const credentialId = issued.args.credentialId;
+
+      expect(await credentialStatus.isRevoked(credentialId)).to.equal(false);
+      expect(await credentialStatus.verifyCredentialIntegrity(credentialId, credentialHash)).to.equal(true);
+
+      await expect(credentialStatus.connect(verifier).logVerification(credentialId, true))
+        .to.emit(credentialStatus, "VerificationLogged");
+    });
+  });
 });

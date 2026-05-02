@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/revatsaharan/Documents/Git_Repos/Group15_2026SemesterB_CSE540_IAM_dApp/contracts/AccessControl.sol": {
-      "lastModificationDate": 1775990532206,
-      "contentHash": "6d8fe0b3a6f4fd7778513ab36dd4cf49",
+      "lastModificationDate": 1777605472862,
+      "contentHash": "704e98baf8c9268965c284f876fa40f9",
       "sourceName": "contracts/AccessControl.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -41,8 +41,8 @@
       ]
     },
     "/Users/revatsaharan/Documents/Git_Repos/Group15_2026SemesterB_CSE540_IAM_dApp/contracts/DIDRegistry.sol": {
-      "lastModificationDate": 1775991686852,
-      "contentHash": "cf18bfb85e24b9b495ba12a98a901121",
+      "lastModificationDate": 1777605442131,
+      "contentHash": "273d4140a781bf5a02c030cd7212310c",
       "sourceName": "contracts/DIDRegistry.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -77,8 +77,8 @@
       ]
     },
     "/Users/revatsaharan/Documents/Git_Repos/Group15_2026SemesterB_CSE540_IAM_dApp/contracts/CredentialStatus.sol": {
-      "lastModificationDate": 1775991696589,
-      "contentHash": "6a0186d375fee3172476b753d764268b",
+      "lastModificationDate": 1777605456279,
+      "contentHash": "e5a5055686016b6c32f9d8dd4dc53005",
       "sourceName": "contracts/CredentialStatus.sol",
       "solcConfig": {
         "version": "0.8.20",

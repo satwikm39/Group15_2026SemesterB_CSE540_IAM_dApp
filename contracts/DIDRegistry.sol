@@ -146,10 +146,15 @@ contract DIDRegistry {
      * @param newKey    The new PublicKey struct to append to the DID document.
      */
     function addPublicKey(string memory did, PublicKey memory newKey) external onlyController(did) {
-        // TODO: Implement key addition logic
-        // - Push newKey into didDocuments[did].publicKeys
-        // - Update the `updated` timestamp
-        // - Emit DIDUpdated event
+        require(bytes(newKey.keyId).length > 0, "DIDRegistry: empty keyId");
+        require(bytes(newKey.keyType).length > 0, "DIDRegistry: empty keyType");
+        require(newKey.controller == msg.sender, "DIDRegistry: key controller mismatch");
+
+        DIDDocument storage doc = didDocuments[did];
+        doc.publicKeys.push(newKey);
+        doc.updated = block.timestamp;
+
+        emit DIDUpdated(did, msg.sender, block.timestamp);
     }
 
     /**
@@ -159,10 +164,15 @@ contract DIDRegistry {
      * @param service  The new ServiceEndpoint struct to append.
      */
     function addServiceEndpoint(string memory did, ServiceEndpoint memory service) external onlyController(did) {
-        // TODO: Implement service endpoint addition logic
-        // - Push service into didDocuments[did].serviceEndpoints
-        // - Update the `updated` timestamp
-        // - Emit DIDUpdated event
+        require(bytes(service.serviceId).length > 0, "DIDRegistry: empty serviceId");
+        require(bytes(service.serviceType).length > 0, "DIDRegistry: empty serviceType");
+        require(bytes(service.endpoint).length > 0, "DIDRegistry: empty endpoint");
+
+        DIDDocument storage doc = didDocuments[did];
+        doc.serviceEndpoints.push(service);
+        doc.updated = block.timestamp;
+
+        emit DIDUpdated(did, msg.sender, block.timestamp);
     }
 
     /**
@@ -172,10 +182,11 @@ contract DIDRegistry {
      * @param did  The DID to deactivate.
      */
     function deactivateDID(string memory did) external onlyController(did) {
-        // TODO: Implement deactivation logic
-        // - Set didDocuments[did].active = false
-        // - Update the `updated` timestamp
-        // - Emit DIDDeactivated event
+        DIDDocument storage doc = didDocuments[did];
+        doc.active = false;
+        doc.updated = block.timestamp;
+
+        emit DIDDeactivated(did, msg.sender, block.timestamp);
     }
 
     // -------------------------------------------------------------------------

@@ -163,11 +163,17 @@ contract CredentialStatus {
      * @param credentialId  The unique identifier of the credential anchor to revoke.
      */
     function revokeCredential(bytes32 credentialId) external onlyIssuer(credentialId) {
-        // TODO: Implement revocation logic
-        // - Retrieve the credential's statusIndex from credentialAnchors[credentialId]
-        // - Compute bitmapChunk = statusIndex / 256 and bitPosition = statusIndex % 256
-        // - Set the bit: revocationBitmaps[msg.sender][bitmapChunk] |= (1 << bitPosition)
-        // - Emit CredentialRevoked event
+        uint256 statusIndex = credentialAnchors[credentialId].statusIndex;
+        uint256 bitmapChunk = statusIndex / 256;
+        uint256 bitPosition = statusIndex % 256;
+        uint256 bitMask = (uint256(1) << bitPosition);
+        uint256 currentChunk = revocationBitmaps[msg.sender][bitmapChunk];
+
+        require((currentChunk & bitMask) == 0, "CredentialStatus: already revoked");
+
+        revocationBitmaps[msg.sender][bitmapChunk] = currentChunk | bitMask;
+
+        emit CredentialRevoked(credentialId, msg.sender, statusIndex, block.timestamp);
     }
 
     /**

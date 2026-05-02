@@ -78,12 +78,18 @@ contract AccessControl {
 
     /// @dev Maps an admin address to whether they have admin privileges.
     mapping(address => bool) private admins;
+    mapping(bytes32 => address) private didToAccount;
 
     /**
      * @dev Consent registry. Key is keccak256(holderDID, verifierDID, credentialId).
      *      Allows holders to grant/revoke per-credential access to specific verifiers.
      */
     mapping(bytes32 => ConsentGrant) private consentGrants;
+
+    /// @dev Internal helper to normalize a DID string as mapping key.
+    function _didKey(string memory did) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(did));
+    }
 
     // -------------------------------------------------------------------------
     // Events
@@ -143,11 +149,22 @@ contract AccessControl {
      * @param did  The caller's DID string (must be active in DIDRegistry).
      */
     function registerAsHolder(string memory did) external {
-        // TODO: Implement Holder registration
-        // - Verify didRegistry.isDIDActive(did) is true
-        // - Verify msg.sender is not already registered (stakeholders[msg.sender].active == false)
-        // - Create a Stakeholder record with Role.HOLDER and store in stakeholders[msg.sender]
-        // - Emit StakeholderRegistered event
+        require(didRegistry.isDIDActive(did), "AccessControl: DID is not active");
+        require(!stakeholders[msg.sender].active, "AccessControl: already registered");
+
+        bytes32 didKey = _didKey(did);
+        require(didToAccount[didKey] == address(0), "AccessControl: DID already in use");
+
+        stakeholders[msg.sender] = Stakeholder({
+            did: did,
+            role: Role.HOLDER,
+            authorizedBy: address(0),
+            registeredAt: block.timestamp,
+            active: true
+        });
+        didToAccount[didKey] = msg.sender;
+
+        emit StakeholderRegistered(msg.sender, did, Role.HOLDER, block.timestamp);
     }
 
     /**
@@ -157,9 +174,22 @@ contract AccessControl {
      * @param did  The caller's DID string (must be active in DIDRegistry).
      */
     function registerAsVerifier(string memory did) external {
-        // TODO: Implement Verifier registration
-        // - Similar to registerAsHolder but with Role.VERIFIER
-        // - Emit StakeholderRegistered event
+        require(didRegistry.isDIDActive(did), "AccessControl: DID is not active");
+        require(!stakeholders[msg.sender].active, "AccessControl: already registered");
+
+        bytes32 didKey = _didKey(did);
+        require(didToAccount[didKey] == address(0), "AccessControl: DID already in use");
+
+        stakeholders[msg.sender] = Stakeholder({
+            did: did,
+            role: Role.VERIFIER,
+            authorizedBy: address(0),
+            registeredAt: block.timestamp,
+            active: true
+        });
+        didToAccount[didKey] = msg.sender;
+
+        emit StakeholderRegistered(msg.sender, did, Role.VERIFIER, block.timestamp);
     }
 
     /**
@@ -169,11 +199,30 @@ contract AccessControl {
      * @param did            The Issuer's active DID.
      */
     function authorizeIssuer(address issuerAddress, string memory did) external onlyAdmin {
-        // TODO: Implement Issuer authorization
-        // - Verify didRegistry.isDIDActive(did) is true
-        // - Create/update the Stakeholder record for issuerAddress with Role.ISSUER
-        // - Set authorizedBy = msg.sender
-        // - Emit IssuerAuthorized event
+        require(issuerAddress != address(0), "AccessControl: invalid issuer address");
+        require(didRegistry.isDIDActive(did), "AccessControl: DID is not active");
+
+        bytes32 didKey = _didKey(did);
+        address existingAccount = didToAccount[didKey];
+        require(
+            existingAccount == address(0) || existingAccount == issuerAddress,
+            "AccessControl: DID already in use"
+        );
+        require(
+            !stakeholders[issuerAddress].active || keccak256(bytes(stakeholders[issuerAddress].did)) == keccak256(bytes(did)),
+            "AccessControl: issuer address already bound to another DID"
+        );
+
+        stakeholders[issuerAddress] = Stakeholder({
+            did: did,
+            role: Role.ISSUER,
+            authorizedBy: msg.sender,
+            registeredAt: block.timestamp,
+            active: true
+        });
+        didToAccount[didKey] = issuerAddress;
+
+        emit IssuerAuthorized(issuerAddress, did, msg.sender, block.timestamp);
     }
 
     // -------------------------------------------------------------------------
@@ -193,11 +242,35 @@ contract AccessControl {
         bytes32 credentialId,
         uint256 expiresAt
     ) external onlyRegistered {
-        // TODO: Implement consent granting
-        // - Retrieve caller's DID from stakeholders[msg.sender].did
-        // - Generate consentKey = keccak256(abi.encodePacked(holderDID, verifierDID, credentialId))
-        // - Store ConsentGrant in consentGrants[consentKey]
-        // - Emit ConsentGranted event
+        Stakeholder storage caller = stakeholders[msg.sender];
+        require(caller.role == Role.HOLDER, "AccessControl: caller is not a holder");
+        require(didRegistry.isDIDActive(verifierDID), "AccessControl: verifier DID is not active");
+
+        address verifierAccount = didToAccount[_didKey(verifierDID)];
+        require(verifierAccount != address(0), "AccessControl: verifier not registered");
+        require(
+            stakeholders[verifierAccount].active && stakeholders[verifierAccount].role == Role.VERIFIER,
+            "AccessControl: invalid verifier role"
+        );
+
+        CredentialStatus.CredentialAnchor memory anchor = credentialStatus.getCredentialAnchor(credentialId);
+        require(
+            keccak256(bytes(anchor.subjectDID)) == keccak256(bytes(caller.did)),
+            "AccessControl: holder not credential subject"
+        );
+        require(!credentialStatus.isRevoked(credentialId), "AccessControl: credential revoked");
+        require(expiresAt == 0 || expiresAt > block.timestamp, "AccessControl: invalid expiry");
+
+        bytes32 consentKey = keccak256(abi.encodePacked(caller.did, verifierDID, credentialId));
+        consentGrants[consentKey] = ConsentGrant({
+            holderDID: caller.did,
+            verifierDID: verifierDID,
+            credentialId: credentialId,
+            expiresAt: expiresAt,
+            granted: true
+        });
+
+        emit ConsentGranted(caller.did, verifierDID, credentialId, expiresAt);
     }
 
     /**
@@ -207,10 +280,19 @@ contract AccessControl {
      * @param credentialId  The credential for which consent is revoked.
      */
     function revokeConsent(string memory verifierDID, bytes32 credentialId) external onlyRegistered {
-        // TODO: Implement consent revocation
-        // - Compute consentKey
-        // - Set consentGrants[consentKey].granted = false
-        // - Emit ConsentRevoked event
+        Stakeholder storage caller = stakeholders[msg.sender];
+        require(caller.role == Role.HOLDER, "AccessControl: caller is not a holder");
+
+        bytes32 consentKey = keccak256(abi.encodePacked(caller.did, verifierDID, credentialId));
+        ConsentGrant storage grant = consentGrants[consentKey];
+        require(grant.granted, "AccessControl: consent not active");
+        require(
+            keccak256(bytes(grant.holderDID)) == keccak256(bytes(caller.did)),
+            "AccessControl: unauthorized revocation"
+        );
+
+        grant.granted = false;
+        emit ConsentRevoked(caller.did, verifierDID, credentialId, block.timestamp);
     }
 
     // -------------------------------------------------------------------------
@@ -238,11 +320,19 @@ contract AccessControl {
         string memory verifierDID,
         bytes32 credentialId
     ) external view returns (bool) {
-        // TODO: Implement consent check
-        // - Compute consentKey
-        // - Retrieve the ConsentGrant
-        // - Return grant.granted && (grant.expiresAt == 0 || block.timestamp <= grant.expiresAt)
-        revert("AccessControl: hasConsent not implemented");
+        bytes32 consentKey = keccak256(abi.encodePacked(holderDID, verifierDID, credentialId));
+        ConsentGrant storage grant = consentGrants[consentKey];
+
+        if (!grant.granted) {
+            return false;
+        }
+        if (grant.expiresAt != 0 && block.timestamp > grant.expiresAt) {
+            return false;
+        }
+        if (credentialStatus.isRevoked(credentialId)) {
+            return false;
+        }
+        return true;
     }
 
     /**

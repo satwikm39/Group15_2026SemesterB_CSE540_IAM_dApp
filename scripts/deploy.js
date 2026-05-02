@@ -12,7 +12,10 @@
  *   npx hardhat run scripts/deploy.js --network mumbai        (Polygon testnet)
  */
 
-const { ethers } = require("hardhat");
+const hre = require("hardhat");
+const { ethers } = hre;
+const fs = require("fs/promises");
+const path = require("path");
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -50,7 +53,21 @@ async function main() {
   console.log("AccessControl:    ", accessControlAddress);
   console.log("==========================\n");
 
-  // TODO (Phase 3): Write deployed addresses to a deployments.json for frontend integration
+  const deploymentFile = path.join(
+    process.cwd(),
+    "deployments.json"
+  );
+  const payload = {
+    network: hre.network.name,
+    deployedAt: new Date().toISOString(),
+    contracts: {
+      DIDRegistry: didRegistryAddress,
+      CredentialStatus: credentialStatusAddress,
+      AccessControl: accessControlAddress,
+    },
+  };
+  await fs.writeFile(deploymentFile, JSON.stringify(payload, null, 2), "utf8");
+  console.log("Deployment metadata written to:", deploymentFile);
 }
 
 main()

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IAM dApp Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Decentralized IAM dApp Dashboard</h1>
+      <p>Holder / Issuer / Verifier contract interaction panel</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>1) Wallet + Contract Setup</h2>
+        <div class="row">
+          <button id="connectWalletBtn">Connect MetaMask</button>
+          <span id="walletStatus">Wallet: not connected</span>
+        </div>
+        <div class="grid">
+          <label>
+            DIDRegistry Address
+            <input id="didRegistryAddress" placeholder="0x..." />
+          </label>
+          <label>
+            CredentialStatus Address
+            <input id="credentialStatusAddress" placeholder="0x..." />
+          </label>
+          <label>
+            AccessControl Address
+            <input id="accessControlAddress" placeholder="0x..." />
+          </label>
+        </div>
+        <div class="row">
+          <button id="loadDeploymentsBtn">Load from deployments.json</button>
+          <button id="bindContractsBtn">Bind Contracts</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2) DID Actions</h2>
+        <div class="grid">
+          <label>
+            DID
+            <input id="didInput" placeholder="did:ethr:0x..." />
+          </label>
+          <label>
+            Key ID
+            <input id="keyIdInput" value="key-1" />
+          </label>
+          <label>
+            Public Key Hex
+            <input id="publicKeyHexInput" value="0x1234" />
+          </label>
+          <label>
+            Service ID
+            <input id="serviceIdInput" value="vc-service" />
+          </label>
+          <label>
+            Service Type
+            <input id="serviceTypeInput" value="VerifiableCredentialService" />
+          </label>
+          <label>
+            Service Endpoint
+            <input id="serviceEndpointInput" value="https://example.com/agent" />
+          </label>
+        </div>
+        <div class="row">
+          <button id="registerDidBtn">Register DID</button>
+          <button id="resolveDidBtn">Resolve DID</button>
+          <button id="deactivateDidBtn">Deactivate DID</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>3) Role And Consent Actions</h2>
+        <div class="grid">
+          <label>
+            Issuer Address (admin only)
+            <input id="issuerAddressInput" placeholder="0x..." />
+          </label>
+          <label>
+            Verifier DID
+            <input id="verifierDidInput" placeholder="did:ethr:0x..." />
+          </label>
+          <label>
+            Holder DID
+            <input id="holderDidInput" placeholder="did:ethr:0x..." />
+          </label>
+          <label>
+            Consent Expiry Timestamp (0=no expiry)
+            <input id="consentExpiryInput" value="0" />
+          </label>
+          <label>
+            Credential ID (bytes32)
+            <input id="credentialIdInput" placeholder="0x..." />
+          </label>
+        </div>
+        <div class="row">
+          <button id="registerHolderBtn">Register As Holder</button>
+          <button id="registerVerifierBtn">Register As Verifier</button>
+          <button id="authorizeIssuerBtn">Authorize Issuer</button>
+        </div>
+        <div class="row">
+          <button id="grantConsentBtn">Grant Consent</button>
+          <button id="revokeConsentBtn">Revoke Consent</button>
+          <button id="hasConsentBtn">Check Consent</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>4) Credential Actions</h2>
+        <div class="grid">
+          <label>
+            Credential Subject DID
+            <input id="subjectDidInput" placeholder="did:ethr:0x..." />
+          </label>
+          <label>
+            Credential JSON Payload
+            <textarea id="credentialPayloadInput" rows="6">{ "type": "IdentityAccessCredential", "claim": "employee" }</textarea>
+          </label>
+          <label>
+            Off-Chain CID (or local hash id)
+            <input id="cidInput" value="QmPlaceholderCID" />
+          </label>
+          <label>
+            Computed Credential Hash
+            <input id="computedHashInput" placeholder="auto-computed from JSON payload" />
+          </label>
+        </div>
+        <div class="row">
+          <button id="computeHashBtn">Compute Hash</button>
+          <button id="issueCredentialBtn">Issue Credential</button>
+          <button id="checkRevokedBtn">Is Revoked?</button>
+          <button id="revokeCredentialBtn">Revoke Credential</button>
+        </div>
+        <div class="row">
+          <button id="verifyIntegrityBtn">Verify Integrity</button>
+          <button id="logVerificationBtn">Log Verification (true)</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Event Log</h2>
+        <pre id="logOutput">Ready.</pre>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    <script src="./contracts.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

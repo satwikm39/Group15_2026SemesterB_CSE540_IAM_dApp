@@ -44,7 +44,7 @@ No raw personally identifiable information (PII) is ever stored on-chain.
               ▼                         ▼
 ┌──────────────────────────────────────────────────────────┐
 │                    Off-Chain Storage (IPFS)               │
-│   Encrypted VC payloads pinned via CID.                  │
+│   Encrypted VC payloads stored off-chain via CID.         │
 │   On-chain: only the CID + keccak256 hash anchor.        │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -74,11 +74,20 @@ iam-dapp/
 │   ├── CredentialStatus.sol    # Credential anchoring and revocation (bitmap)
 │   └── AccessControl.sol       # Role management and consent registry
 ├── scripts/
-│   └── deploy.js               # Deployment script (Hardhat)
+│   ├── deploy.js               # Deployment script (Hardhat)
+│   ├── demo-e2e.js             # End-to-end IAM lifecycle demo script
+│   ├── gas-analysis.js         # Gas measurement script for key operations
+│   └── offchainStore.js        # Encrypted off-chain credential store adapter
+├── web/
+│   ├── index.html              # Browser dashboard for IAM workflows
+│   ├── app.js                  # Wallet + contract interaction logic
+│   ├── contracts.js            # Frontend ABIs
+│   ├── styles.css              # Dashboard styling
+│   └── server.js               # Local static server
 ├── test/
-│   └── iam.test.js             # Unit test scaffold (Chai + Hardhat)
+│   └── iam.test.js             # Unit + integration tests (Chai + Hardhat)
 ├── docs/
-│   └── architecture.md         # Detailed architecture notes (in progress)
+│   └── architecture.md         # Detailed architecture notes
 ├── hardhat.config.js           # Hardhat configuration (Solidity 0.8.20)
 ├── package.json
 └── README.md
@@ -129,6 +138,33 @@ npm test
 # or: npx hardhat test
 ```
 
+### Run End-to-End Demo (Local)
+
+```bash
+npm run demo:e2e
+```
+
+### Run Web Dashboard (Local)
+
+```bash
+# terminal 1
+npm run node
+
+# terminal 2
+npm run deploy:localhost
+
+# terminal 3
+npm run ui:start
+```
+
+Then open `http://localhost:5174`, connect MetaMask to the local Hardhat network, click **Load from deployments.json**, then **Bind Contracts**.
+
+### Run Gas Analysis
+
+```bash
+npm run gas:report
+```
+
 ### Deploy Locally (Hardhat Network)
 
 ```bash
@@ -160,19 +196,21 @@ npm run deploy:mumbai     # Polygon Mumbai (lower gas)
 
 ---
 
-## Current Status (Smart Contract Design Draft)
+## Current Status
 
-This repository represents the **Smart Contract Design Draft** milestone. The current state includes:
+This repository now includes a **functional IAM core implementation** with test coverage and runnable demo scripts:
 
 - [x] Project architecture defined
-- [x] All three smart contracts drafted with function signatures and interfaces
-- [x] High-level NatSpec comments on all functions
-- [x] Deployment script structured
-- [x] Test scaffold with planned test cases
-- [ ] Function body implementations *(in progress — Midterm Update)*
-- [ ] Frontend integration *(Phase 3)*
-- [ ] IPFS integration *(Phase 3)*
-- [ ] Gas optimization analysis *(Final Project)*
+- [x] DID lifecycle functions implemented (`register`, `update`, `deactivate`)
+- [x] Credential issuance + bitmap revocation implemented
+- [x] Role and consent management implemented
+- [x] End-to-end smart contract tests passing
+- [x] Deployment script with `deployments.json` output
+- [x] Off-chain encrypted credential storage adapter
+- [x] E2E demo script for issuer/holder/verifier lifecycle
+- [x] Gas measurement script for key IAM operations
+- [x] Minimal web dashboard for Holder/Issuer/Verifier flows
+- [ ] IPFS adapter integration *(can replace current off-chain store adapter)*
 
 ---
 
@@ -185,8 +223,6 @@ This repository represents the **Smart Contract Design Draft** milestone. The cu
 | Satwik Mazumdar | Blockchain Analyst & QA |
 | Sreehari Krishna Sadesh | Decentralized Data Engineer |
 | Shashank Valayaputtur | Systems Integration & Testing |
-
-**Submitter:** Satwik Mazumdar
 
 ---
 

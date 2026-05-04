@@ -2,7 +2,7 @@
 
 **CSE 540: Engineering Blockchain Applications — Group 15**
 
-> [Revat Saharan](https://github.com/Saharan-Revat) · [Abhilakshay Pathania](https://github.com/aspatha5-asu) · [Satwik Mazumdar](https://github.com/satwikm39) · [Sreehari Krishna Sadesh](https://github.com/sskcyber1) · [Shashank Valayaputtur](https://github.com/shashank-username)
+> [Revat Saharan](https://github.com/Saharan-Revat) · [Abhilakshay Pathania](https://github.com/aspatha5-asu) · [Satwik Mazumdar](https://github.com/satwikm39) · [Sreehari Krishna Sadesh](https://github.com/sskcyber1) · [Shashank Valayaputtur](https://github.com/shashraptor)
 
 ---
 
